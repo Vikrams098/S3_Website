@@ -5,6 +5,7 @@ on:
       - main
       - dev
       - feature/*
+  workflow_dispatch:
 jobs:
   Development:
     runs-on: ubuntu-latest
