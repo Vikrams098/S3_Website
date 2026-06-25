@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KV's Cafe — Admin Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --clay:    #C9561E;
+      --turmeric:#E8A020;
+      --cream:   #FDF6EC;
+      --charcoal:#1C1612;
+      --smoke:   #4A3F35;
+      --mist:    #F0E8DC;
+      --white:   #FFFFFF;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: #F5F0EA; color: var(--charcoal); min-height: 100vh; }
+
+    header {
+      background: var(--charcoal); padding: 0 40px;
+      display: flex; justify-content: space-between; align-items: center;
+      height: 64px;
+    }
+    .header-brand { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--white); }
+    .header-badge {
+      background: var(--clay); color: var(--white);
+      font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 5px 12px; border-radius: 20px;
+    }
+
+    main { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+
+    /* Stats */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px;
+    }
+    .stat-card {
+      background: var(--white); border-radius: 14px; padding: 24px;
+      border: 1px solid var(--mist);
+    }
+    .stat-label { font-size: 12px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--smoke); margin-bottom: 8px; }
+    .stat-value { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 700; color: var(--charcoal); }
+    .stat-sub   { font-size: 12px; color: var(--smoke); margin-top: 4px; }
+
+    /* Tabs */
+    .admin-tabs { display: flex; gap: 4px; background: var(--mist); padding: 5px; border-radius: 10px; width: fit-content; margin-bottom: 24px; }
+    .admin-tab {
+      padding: 9px 24px; border-radius: 7px; font-size: 14px; font-weight: 500;
+      color: var(--smoke); cursor: pointer; border: none; background: none; transition: all 0.2s;
+    }
+    .admin-tab.active { background: var(--white); color: var(--clay); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+    /* Panel */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .panel-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+    }
+    .panel-title { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; }
+
+    .filter-row { display: flex; gap: 12px; align-items: center; }
+    .filter-row input, .filter-row select {
+      padding: 9px 14px; border: 1.5px solid var(--mist); border-radius: 8px;
+      font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--charcoal);
+      background: var(--white); outline: none; cursor: pointer;
+    }
+    .filter-row input:focus, .filter-row select:focus { border-color: var(--clay); }
+
+    .refresh-btn {
+      background: var(--charcoal); color: var(--white); border: none;
+      padding: 9px 18px; border-radius: 8px; font-size: 14px; font-weight: 500;
+      cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background 0.2s;
+    }
+    .refresh-btn:hover { background: var(--clay); }
+
+    /* Table */
+    .table-wrap { background: var(--white); border-radius: 14px; overflow: hidden; border: 1px solid var(--mist); }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: var(--mist); }
+    th { padding: 13px 18px; font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--smoke); text-align: left; }
+    td { padding: 14px 18px; font-size: 14px; border-top: 1px solid var(--mist); vertical-align: middle; }
+    tr:hover td { background: #FDFAF7; }
+
+    /* Badges */
+    .badge {
+      display: inline-block; padding: 4px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
+    }
+    .badge-pending   { background: #FEF4DC; color: #A06A00; }
+    .badge-confirmed { background: #E4F0D8; color: #2D5016; }
+    .badge-preparing { background: #FDE8DE; color: var(--clay); }
+    .badge-ready     { background: #D8EFF4; color: #0D5C63; }
+    .badge-delivered { background: #E4F0D8; color: #2D5016; }
+    .badge-completed { background: #E4F0D8; color: #2D5016; }
+    .badge-cancelled { background: #F0E0E0; color: #8B2020; }
+
+    /* Inline status select */
+    .status-select {
+      padding: 5px 10px; border: 1.5px solid var(--mist); border-radius: 6px;
+      font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--charcoal);
+      background: var(--white); cursor: pointer; outline: none;
+    }
+    .status-select:focus { border-color: var(--clay); }
+
+    /* Items list in order */
+    .order-items { font-size: 13px; color: var(--smoke); line-height: 1.6; }
+
+    /* Empty state */
+    .empty-state { padding: 60px 20px; text-align: center; color: var(--smoke); }
+    .empty-state span { font-size: 40px; display: block; margin-bottom: 12px; }
+
+    /* Toast */
+    #toast-container { position: fixed; top: 20px; right: 20px; z-index: 999; display: flex; flex-direction: column; gap: 10px; }
+    .toast {
+      background: var(--charcoal); color: var(--white); padding: 12px 18px; border-radius: 10px;
+      font-size: 14px; display: flex; align-items: center; gap: 10px;
+      transform: translateX(120%); transition: transform 0.3s ease; max-width: 320px;
+      box-shadow: 0 6px 20px rgba(28,22,18,0.2);
+    }
+    .toast.show { transform: translateX(0); }
+    .toast-success { background: #1F5C2E; }
+    .toast-error   { background: #8B2020; }
+
+    @media (max-width: 768px) {
+      header { padding: 0 20px; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      main { padding: 20px 16px; }
+      th, td { padding: 10px 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-brand">KV's Cafe</div>
+  <span class="header-badge">Admin Panel</span>
+</header>
+
+<main>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Today's Reservations</div>
+      <div class="stat-value" id="stat-today-res">—</div>
+      <div class="stat-sub">bookings for today</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Pending Orders</div>
+      <div class="stat-value" id="stat-pending-orders">—</div>
+      <div class="stat-sub">awaiting preparation</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Orders</div>
+      <div class="stat-value" id="stat-total-orders">—</div>
+      <div class="stat-sub">all time</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Reservations</div>
+      <div class="stat-value" id="stat-total-res">—</div>
+      <div class="stat-sub">all time</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="admin-tabs">
+    <button class="admin-tab active" onclick="showPanel('reservations', this)">Reservations</button>
+    <button class="admin-tab"        onclick="showPanel('orders', this)">Orders</button>
+  </div>
+
+  <!-- Reservations Panel -->
+  <div class="panel active" id="panel-reservations">
+    <div class="panel-header">
+      <div class="panel-title">Reservations</div>
+      <div class="filter-row">
+        <input type="date" id="res-date-filter" onchange="loadReservations()" title="Filter by date"/>
+        <button class="refresh-btn" onclick="loadReservations()">Refresh</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Date</th>
+            <th>Time Slot</th>
+            <th>Guests</th>
+            <th>Booked At</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="reservations-body">
+          <tr><td colspan="8" class="empty-state"><span>📅</span>Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Orders Panel -->
+  <div class="panel" id="panel-orders">
+    <div class="panel-header">
+      <div class="panel-title">Orders</div>
+      <div class="filter-row">
+        <select id="order-status-filter" onchange="loadOrders()">
+          <option value="">All statuses</option>
+          <option value="pending">Pending</option>
+          <option value="preparing">Preparing</option>
+          <option value="ready">Ready</option>
+          <option value="delivered">Delivered</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <button class="refresh-btn" onclick="loadOrders()">Refresh</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Customer</th>
+            <th>Phone</th>
+            <th>Type</th>
+            <th>Items</th>
+            <th>Total</th>
+            <th>Placed At</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="orders-body">
+          <tr><td colspan="8" class="empty-state"><span>🧾</span>Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<div id="toast-container"></div>
+
+<script>
+  const API_URL = 'http://localhost:3000/api';
+
+  // ── TABS ─────────────────────────────────────────────────────────────────
+  function showPanel(name, btn) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // ── STATS ─────────────────────────────────────────────────────────────────
+  async function loadStats() {
+    try {
+      const [ordersRes, resRes] = await Promise.all([
+        fetch(`${API_URL}/orders`),
+        fetch(`${API_URL}/reservations`)
+      ]);
+      const orders = (await ordersRes.json()).data || [];
+      const reservations = (await resRes.json()).data || [];
+
+      const today = new Date().toISOString().slice(0, 10);
+      document.getElementById('stat-today-res').textContent =
+        reservations.filter(r => r.date === today).length;
+      document.getElementById('stat-pending-orders').textContent =
+        orders.filter(o => o.status === 'pending').length;
+      document.getElementById('stat-total-orders').textContent = orders.length;
+      document.getElementById('stat-total-res').textContent   = reservations.length;
+    } catch(e) { console.error('Stats error:', e); }
+  }
+
+  // ── RESERVATIONS ──────────────────────────────────────────────────────────
+  async function loadReservations() {
+    const date  = document.getElementById('res-date-filter').value;
+    const tbody = document.getElementById('reservations-body');
+    tbody.innerHTML = '<tr><td colspan="8" style="padding:20px;color:var(--smoke)">Loading…</td></tr>';
+    try {
+      const url = date ? `${API_URL}/reservations?date=${date}` : `${API_URL}/reservations`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const rows = data.data || [];
+      if (rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><span>📅</span>No reservations found.</div></td></tr>';
+        return;
+      }
+      tbody.innerHTML = rows.map(r => `
+        <tr>
+          <td><strong>#${r.id}</strong></td>
+          <td>${r.name}</td>
+          <td>${r.phone}</td>
+          <td>${r.date}</td>
+          <td>${r.time_slot}</td>
+          <td>${r.guests}</td>
+          <td>${formatDate(r.created_at)}</td>
+          <td>
+            <select class="status-select" onchange="updateReservationStatus(${r.id}, this.value)">
+              ${['pending','confirmed','cancelled','completed'].map(s =>
+                `<option value="${s}" ${r.status === s ? 'selected' : ''}>${cap(s)}</option>`
+              ).join('')}
+            </select>
+          </td>
+        </tr>
+      `).join('');
+    } catch(e) {
+      tbody.innerHTML = '<tr><td colspan="8" style="color:red;padding:20px">Error loading reservations.</td></tr>';
+    }
+  }
+
+  async function updateReservationStatus(id, status) {
+    try {
+      const res = await fetch(`${API_URL}/reservations/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      const data = await res.json();
+      if (data.success) { showToast(`Reservation #${id} → ${status}`, 'success'); loadStats(); }
+      else showToast(data.error || 'Update failed.', 'error');
+    } catch(e) { showToast('Network error.', 'error'); }
+  }
+
+  // ── ORDERS ────────────────────────────────────────────────────────────────
+  async function loadOrders() {
+    const status = document.getElementById('order-status-filter').value;
+    const tbody  = document.getElementById('orders-body');
+    tbody.innerHTML = '<tr><td colspan="8" style="padding:20px;color:var(--smoke)">Loading…</td></tr>';
+    try {
+      const url = status ? `${API_URL}/orders?status=${status}` : `${API_URL}/orders`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const rows = data.data || [];
+      if (rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><span>🧾</span>No orders found.</div></td></tr>';
+        return;
+      }
+      tbody.innerHTML = rows.map(o => `
+        <tr>
+          <td><strong>#${o.id}</strong></td>
+          <td>${o.customer_name}</td>
+          <td>${o.phone}</td>
+          <td>${cap(o.order_type)}${o.table_number ? ' · T' + o.table_number : ''}</td>
+          <td><div class="order-items">${o.items.map(i => `${i.emoji || ''} ${i.name} ×${i.quantity}`).join('<br/>')}</div></td>
+          <td><strong>₹${o.total}</strong></td>
+          <td>${formatDate(o.created_at)}</td>
+          <td>
+            <select class="status-select" onchange="updateOrderStatus(${o.id}, this.value)">
+              ${['pending','preparing','ready','delivered','cancelled'].map(s =>
+                `<option value="${s}" ${o.status === s ? 'selected' : ''}>${cap(s)}</option>`
+              ).join('')}
+            </select>
+          </td>
+        </tr>
+      `).join('');
+    } catch(e) {
+      tbody.innerHTML = '<tr><td colspan="8" style="color:red;padding:20px">Error loading orders.</td></tr>';
+    }
+  }
+
+  async function updateOrderStatus(id, status) {
+    try {
+      const res = await fetch(`${API_URL}/orders/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      const data = await res.json();
+      if (data.success) { showToast(`Order #${id} → ${status}`, 'success'); loadStats(); }
+      else showToast(data.error || 'Update failed.', 'error');
+    } catch(e) { showToast('Network error.', 'error'); }
+  }
+
+  // ── UTILS ─────────────────────────────────────────────────────────────────
+  function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+
+  function formatDate(dt) {
+    if (!dt) return '—';
+    const d = new Date(dt);
+    return d.toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+  }
+
+  function showToast(msg, type = 'success') {
+    const c = document.getElementById('toast-container');
+    const t = document.createElement('div');
+    t.className = `toast toast-${type}`;
+    t.innerHTML = `<span>${type === 'success' ? '✓' : '✕'}</span><span>${msg}</span>`;
+    c.appendChild(t);
+    requestAnimationFrame(() => { requestAnimationFrame(() => t.classList.add('show')); });
+    setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3500);
+  }
+
+  // ── INIT ──────────────────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    loadStats();
+    loadReservations();
+    loadOrders();
+  });
+</script>
+</body>
+</html>
