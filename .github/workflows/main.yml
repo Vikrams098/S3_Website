@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: Docker image deploy
 
 on:
   push:
@@ -14,8 +14,15 @@ concurrency:
 
 jobs:
   Deploy:
-    uses: ./.github/workflows/docker-image-deploy.yml
+    uses: Vikrams098/Dependencies/.github/workflows/docker_image_deploy.yml@dev
     with:
       image_name:     kvs-cafe
       container_name: kvs-cafe-app
-    secrets: inherit
+    secrets:
+      DOCKERHUB_USERNAME:      ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN:         ${{ secrets.DOCKERHUB_TOKEN }}
+      EC2_INSTANCE_ID:         ${{ secrets.EC2_INSTANCE_ID }}
+      S3_DEPLOY_ACCESS_KEY:    ${{ secrets.S3_DEPLOY_ACCESS_KEY }}
+      S3_DEPLOY_SECRET_KEY:    ${{ secrets.S3_DEPLOY_SECRET_KEY }}
+      AWS_REGION:              ${{ secrets.AWS_REGION }}
+      S3_DEPLOY_BUCKET_NAME:   ${{ secrets.S3_DEPLOY_BUCKET_NAME }}
