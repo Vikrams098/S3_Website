@@ -1,0 +1,30 @@
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# CI / CD
+.github
+
+# Frontend is deployed to S3 separately — not baked into the image
+frontend/
+
+# Documentation
+*.md
+LICENSE
+
+# Environment files — NEVER bundle secrets in the image
+.env
+.env.*
+!.env.example
+
+# Node modules in any subdirectory (rebuilt inside Docker)
+**/node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS artifacts
+.DS_Store
+Thumbs.db

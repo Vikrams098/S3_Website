@@ -1,28 +1,21 @@
-name: Deploy to S3
+name: CI/CD Pipeline
 
 on:
   push:
     branches:
       - main
       - dev
-      - feature/*
   workflow_dispatch:
 
+# One deployment at a time — never cancel an in-flight deploy
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.S3_DEPLOY_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.S3_DEPLOY_SECRET_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Sync files to S3
-        run: |
-          aws s3 sync ./frontend s3://${{ secrets.S3_DEPLOY_BUCKET_NAME }} \
-            --delete
+  Deploy:
+    uses: ./.github/workflows/docker-image-deploy.yml
+    with:
+      image_name:     kvs-cafe
+      container_name: kvs-cafe-app
+    secrets: inherit
