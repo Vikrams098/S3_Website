@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   Deploy:
-    uses: Vikrams098/Dependencies/.github/workflows/docker_image_deploy.yml@dev
+    uses: Vikrams098/Dependencies/.github/workflows/docker_image_deploy.yml@main
     with:
       image_name:     kvs-cafe
       container_name: kvs-cafe-app
