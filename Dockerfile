@@ -12,6 +12,7 @@ RUN npm install --omit=dev
 
 # Copy application source after deps are installed
 COPY backend/ .
+COPY frontend/ ./frontend/
 
 # ── Stage 2: Production ────────────────────────────────────────────────────────
 FROM node:20-alpine AS production

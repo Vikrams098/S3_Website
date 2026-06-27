@@ -6,9 +6,6 @@
 # CI / CD
 .github
 
-# Frontend is deployed to S3 separately — not baked into the image
-frontend/
-
 # Documentation
 *.md
 LICENSE

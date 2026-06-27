@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
+const cors    = require('cors');
+const path    = require('path');
 
 const menuRoutes        = require('./routes/menu');
 const orderRoutes       = require('./routes/orders');
@@ -15,6 +16,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type'],
 }));
 app.use(express.json());
+
+app.use(express.static(path.join(__dirname, 'frontend')));
 
 app.get('/api/health', (_req, res) => res.json({ success: true, message: "KV's Cafe API is running" }));
 
