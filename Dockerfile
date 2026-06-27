@@ -8,7 +8,7 @@ WORKDIR /app
 
 # Install dependencies (separate layer → better layer caching)
 COPY backend/package*.json ./
-RUN npm ci --only=production
+RUN npm install --omit=dev
 
 # Copy application source after deps are installed
 COPY backend/ .
@@ -27,6 +27,9 @@ WORKDIR /app
 
 # Copy built app from builder stage, owned by non-root user
 COPY --from=builder --chown=nodejs:nodejs /app ./
+
+# Create data dir for SQLite DB — must be owned by nodejs before volume mounts
+RUN mkdir -p /app/data && chown nodejs:nodejs /app/data
 
 USER nodejs
 
